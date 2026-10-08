@@ -1,0 +1,14 @@
+flowchart LR
+    C["Новый звонок<br/>из телефонии"] --> F{"Пропущенный<br/>или &lt; 20 сек?"}
+    F -->|да| M["Только в статистику<br/>пропущенные, перезвон"]
+    F -->|нет| L["Привязка к сделке<br/>номер → контакт → сделка"]
+    L --> Q["Аудио в S3,<br/>задача в очередь"]
+    Q --> T["Расшифровка<br/>Whisper / SpeechKit"]
+    T --> E["Оценка LLM по чек-листу<br/>JSON + цитаты с таймкодами"]
+    E --> X["Сверка с CRM<br/>договорились, а задачи нет?"]
+    X --> D[("PostgreSQL")]
+
+    classDef step fill:#eef8ee,stroke:#3f9a4a,color:#1a1a1a
+    classDef warn fill:#fdf3e3,stroke:#d08a1e,color:#1a1a1a
+    class C,L,Q,T,E,X step
+    class F,M warn

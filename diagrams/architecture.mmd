@@ -1,0 +1,37 @@
+flowchart LR
+    subgraph BG["① Фоновая синхронизация — заранее, каждый час"]
+        direction LR
+        AMO[("amoCRM API v4<br/>сделки · задачи · этапы")] --> CRM["CRM-агент<br/>инкрементальная выгрузка"]
+        TEL[("API телефонии<br/>журнал звонков · записи")] --> CALL["Агент звонков<br/>расшифровка + оценка LLM"]
+    end
+
+    subgraph STORE["Хранилище"]
+        direction TB
+        DB[("PostgreSQL + pgvector<br/>сделки, звонки,<br/>оценки, метрики")]
+        S3[("S3<br/>аудиозаписи")]
+    end
+
+    CRM --> DB
+    CALL --> DB
+    CALL --> S3
+
+    subgraph REQ["② По запросу руководителя — ответ из готовой базы"]
+        direction LR
+        U["Руководитель<br/>«Проанализируй отдел<br/>продаж за 30 дней»"] --> O["Оркестратор<br/>период, воронки,<br/>менеджеры"]
+        O --> A["Аналитик<br/>метрики считает код"]
+        A --> R["Агент отчёта<br/>пишет текст"]
+        R --> V{"Верификатор<br/>цифры<br/>совпадают?"}
+        V -->|нет| R
+        V -->|да| OUT["Отчёт в Telegram<br/>со ссылками на<br/>сделки и звонки"]
+    end
+
+    DB --> A
+
+    classDef src fill:#e8f1fb,stroke:#3b82c4,color:#1a1a1a
+    classDef agent fill:#eef8ee,stroke:#3f9a4a,color:#1a1a1a
+    classDef store fill:#fdf3e3,stroke:#d08a1e,color:#1a1a1a
+    classDef human fill:#f3eefb,stroke:#7a52c7,color:#1a1a1a
+    class AMO,TEL src
+    class CRM,CALL,O,A,R,V agent
+    class DB,S3 store
+    class U,OUT human
