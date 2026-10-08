@@ -1,0 +1,2 @@
+# Исходники схем не считаются кодом в статистике языков GitHub
+*.mmd linguist-documentation
